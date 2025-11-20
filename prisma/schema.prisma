@@ -1,6 +1,5 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/common/prisma/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -40,14 +39,15 @@ model like_res {
 }
 
 model orders {
-  id         Int     @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   user_id    Int
   food_id    Int
   amount     Int
-  code       String? @db.VarChar(50)
-  arr_sub_id String? @db.VarChar(20)
-  foods      foods   @relation(fields: [food_id], references: [food_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_order_food")
-  users      users   @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_order_user")
+  code       String?  @db.VarChar(50)
+  arr_sub_id String?  @db.VarChar(20)
+  created_at DateTime @default(now()) @db.DateTime(0)
+  foods      foods    @relation(fields: [food_id], references: [food_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_order_food")
+  users      users    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_order_user")
 
   @@index([food_id], map: "fk_order_food")
   @@index([user_id], map: "fk_order_user")
