@@ -32,15 +32,16 @@ app.get("/check", (req, res) => {
     });
 });
 
-/**
- * Middleware xử lý lỗi toàn cục
- */
-app.use(appError);
 
 const PORT = 3168;
 const domain = `http://localhost:${PORT}`;
 
 // Step 3:
 app.use("/api", rootRouter);
+
+/**
+ * Middleware xử lý lỗi toàn cục
+ */
+app.use(appError);
 
 app.listen(PORT, () => console.log(`Server online at ${domain}`));
