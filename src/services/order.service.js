@@ -1,8 +1,9 @@
+import { buildQuery } from "../common/helpers/build-query.helper.js";
 import { BadRequestException } from "../common/helpers/exception.helper.js";
 import prisma from "../common/prisma/connect.prisma.js";
 
 export const orderService = {
-   // Xử lý order món ăn
+   // !Xử lý order
    create: async (req) => {
       const { user_id, food_id, amount, code, arr_sub_id } = req.body;
 
@@ -45,31 +46,53 @@ export const orderService = {
       return newOrder;
    },
 
+   // !Lấy danh sách đơn hàng (có phân trang)
    findAll: async (req) => {
-      const orders = await prisma.orders.findMany({
-         select: {
-            id: true,
-            user_id: true,
-            food_id: true,
-            amount: true,
-            code: true,
-            arr_sub_id: true,
-            created_at: true,
-            users: {
-               select: { full_name: true, email: true },
-            },
-            foods: {
-               select: { food_name: true, price: true },
-            },
-         },
+      const { page, pageSize, filters, skip } = buildQuery(req.query);
+
+      const ordersPromise = prisma.orders.findMany({
+         where: filters,
+         skip: skip, // Bỏ qua bao nhiêu phần tử
+         take: pageSize, // Số phần tử cần lấy
       });
+
+      const totalItemPromise = prisma.orders.count({ where: filters });
+
+      const [orders, totalItem] = await Promise.all([
+         ordersPromise,
+         totalItemPromise,
+      ]);
+
+      const totalPage = Math.ceil(totalItem / pageSize);
+
+      // const orders1 = await prisma.orders.findMany({
+      //    select: {
+      //       order_id: true,
+      //       user_id: true,
+      //       food_id: true,
+      //       amount: true,
+      //       code: true,
+      //       arr_sub_id: true,
+      //       created_at: true,
+      //       users: {
+      //          select: { full_name: true, email: true },
+      //       },
+      //       foods: {
+      //          select: { food_name: true, price: true },
+      //       },
+      //    },
+      // });
+
       return {
-         message: "Danh sách Đơn hàng",
-         orders,
+         page: page,
+         pageSize: pageSize,
+         totalItem: totalItem,
+         totalPage: totalPage,
+         items: orders || [],
       };
    },
 
-   // Lấy đơn hàng theo user_id
+   // !Lấy đơn hàng theo user_id
    findByUserId: async (req) => {
       const { id } = req.params;
 
